@@ -9,7 +9,9 @@ use prelude::*;
 
 fn main() {
     let mut map = Map::new();
-    map.fill(TileType::LAND);
+    for _i in 0..LAKE_COUNT {
+        map.generate_lake();
+    }
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(map)
@@ -25,10 +27,7 @@ fn main() {
         .run();
 }
 
-pub fn render_map(
-    map: Res<Map>,
-    mut commands: Commands,
-) {
+pub fn render_map(map: Res<Map>, mut commands: Commands) {
     for (idx, tile) in map.tiles.iter().enumerate() {
         let tile_pos = idx_to_vec2(idx as i32);
         commands.spawn_bundle(SpriteBundle {
@@ -46,11 +45,11 @@ pub fn render_map(
     }
 }
 
-fn camera_init(mut commands: Commands, window_descriptor: Res<WindowDescriptor>) {
+fn camera_init(mut commands: Commands) {
     commands.spawn_bundle(Camera2dBundle {
         transform: Transform {
             translation: Vec3::new(MAP_WIDTH as f32 * 2.0, MAP_HEIGHT as f32 * 2.0, 900.0),
-            scale: Vec3::new(0.5, 0.5, 1.0),
+            scale: Vec3::new(1.0, 1.0, 1.0),
             ..default()
         },
         ..default()
