@@ -1,12 +1,18 @@
 use bevy::prelude::{Color, Vec2};
 use rand::{thread_rng, Rng};
 
-pub const MAP_WIDTH: i32 = 200;
-pub const MAP_HEIGHT: i32 = 100;
+pub const MAP_WIDTH: usize = 200;
+pub const MAP_HEIGHT: usize = 100;
 
 const LAKE_GEN_ITERATIONS: usize = 25000;
-pub const LAKE_COUNT: usize = 5;
-pub const TILE_SIZE: i32 = 4;
+pub const LAKE_COUNT: usize = 0;
+pub const TILE_SIZE: usize = 4;
+
+// Trees generation
+const TREE_NOISE_MAP_SCALE: f64 = 10.0;
+const TREE_SPAWN_NOISE_TRESHOLD: f64 = 0.37; 
+
+use crate::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum TileType {
@@ -17,6 +23,7 @@ pub enum TileType {
 #[derive(Clone, Copy)]
 pub struct Tile {
     pub tile_type: TileType,
+    pub height_value: f32,
 }
 
 impl Tile {
@@ -37,6 +44,7 @@ impl Map {
             tiles: vec![
                 Tile {
                     tile_type: TileType::LAND,
+                    height_value: 0.0,
                 };
                 MAP_WIDTH as usize * MAP_HEIGHT as usize
             ],
@@ -47,7 +55,7 @@ impl Map {
         self.tiles.iter_mut().for_each(|t| t.tile_type = tile_type);
     }
 
-    fn size(&self) -> i32 {
+    fn size(&self) -> usize {
         MAP_WIDTH * MAP_HEIGHT
     }
 
@@ -72,7 +80,7 @@ impl Map {
             };
             let next_tile = current_tile + next_tile_diff;
             if self.in_bounds(next_tile) {
-                river_tiles.push(vec2_to_idx(next_tile));
+                river_tiles.push(vec2_to_idx(next_tile) as usize);
                 current_tile = next_tile;
 
                 println!("Current Tile: {}, {}", current_tile.x, current_tile.y);
@@ -101,29 +109,55 @@ impl Map {
     }
 
     fn in_bounds(&self, point: Vec2) -> bool {
-        // println!("{}, {}", point.x, point.y);
-        // println!(
-        //     "{}",
-        //     point.x < (MAP_WIDTH * TILE_SIZE) as f32
-        //         && point.x >= 0.0
-        //         && point.y < (MAP_HEIGHT * TILE_SIZE) as f32
-        //         && point.y >= 0.0
-        // );
         point.x < (MAP_WIDTH * TILE_SIZE) as f32
             && point.x >= 0.0
             && point.y < (MAP_HEIGHT * TILE_SIZE) as f32
             && point.y >= 0.0
     }
+
+    pub fn spawn_trees(&mut self){
+        let noise_map = generate_noise_map(MAP_WIDTH, MAP_HEIGHT, TREE_NOISE_MAP_SCALE);
+        
+        let mut tree_cnt = 0;
+        for y in 0..noise_map.len() {
+            for x in 0..noise_map[y].len() {
+                let noise_value = noise_map[y][x]; 
+                
+                let should_spawn = noise_value < TREE_SPAWN_NOISE_TRESHOLD;
+                if should_spawn {
+                    
+                }
+            }
+        }
+        println!("Projected tree count: {}", tree_cnt);
+    }
+
+    // Break into chunks 20 x 20
+    //
+    // Get average noise value per chunk
+    //
+    // Based on the value, calculate the gap between trees, the greater the value - the farther the
+    // tress are from one another
+    //
+    // On each chunk, spawn tree at the 0x0 relative to chunk, add gap vector to tree_pos vector
+    // and spawn another one
+    //
+    // Do this for each chunk
+        
+    fn get_chunks(chunk_size: Vec2) -> Vec<Vec2>{
+        let mut current_chunk_origin = Vec2::new(0.0, 0.0);
+        let mut chunks = vec![current_chunk_origin];
+    }
 }
 
 pub fn idx_to_vec2(idx: i32) -> Vec2 {
     Vec2 {
-        x: (idx % MAP_WIDTH) as f32 * TILE_SIZE as f32,
-        y: (idx / MAP_WIDTH) as f32 * TILE_SIZE as f32,
+        x: (idx % MAP_WIDTH as i32) as f32 * TILE_SIZE as f32,
+        y: (idx / MAP_WIDTH as i32) as f32 * TILE_SIZE as f32,
     }
 }
 
 pub fn vec2_to_idx(point: Vec2) -> i32 {
     let scaled_point = point * 1.0 / TILE_SIZE as f32;
-    scaled_point.y as i32 * MAP_WIDTH + scaled_point.x as i32
+    scaled_point.y as i32 * MAP_WIDTH as i32 + scaled_point.x as i32
 }
