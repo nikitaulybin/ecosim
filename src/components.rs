@@ -25,9 +25,7 @@ pub struct Tree;
 pub struct RelativeTextureIndex(pub usize);
 
 #[derive(Component)]
-pub struct Animal{ 
-    pub frame_index: usize,
-}
+pub struct Animal;
 #[derive(Component)]
 pub enum AnimalType {
     Bunny,
