@@ -114,6 +114,14 @@ fn spawn_initial_animals(mut commands: Commands) {
         Pos(Vec2::new((MAP_WIDTH as f32 / 2.0) * TILE_SIZE as f32, (MAP_HEIGHT as f32 / 2.0) * TILE_SIZE as f32)),
         AnimalType::Bunny,
         AnimalState::Moving,
+        AnimalDirection::Down,
+    ));
+
+    commands.spawn_bundle((
+        Animal, 
+        Pos(Vec2::new((MAP_WIDTH as f32 / 2.0 + 20.0) * TILE_SIZE as f32, (MAP_HEIGHT as f32 / 2.0) * TILE_SIZE as f32)),
+        AnimalType::Bunny,
+        AnimalState::Moving,
         AnimalDirection::Left,
     ));
 }

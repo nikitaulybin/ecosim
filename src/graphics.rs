@@ -5,9 +5,9 @@ use bevy::sprite::Anchor;
 pub struct GraphicsPlugin;
 
 
-const BUNNY_WIDTH: f32 = 10.0;
+const BUNNY_SIZE: f32 = 10.0;
 const BUNNY_SIDE_HEIGHT_RATIO: f32 = 28.0 / 33.0;
-const BUNNY_FRONTBACK_HEIGHT_RATIO: f32  = 29.0 / 19.0;
+const BUNNY_FRONTBACK_HEIGHT_RATIO: f32  = 19.0 / 29.0;
 
 pub struct SpriteSheets {
     pub trees: Handle<TextureAtlas>,
@@ -53,13 +53,12 @@ fn spawn_animal_sprites(
             };
             let sprite_size = match animal_type {
                 AnimalType::Bunny => match direction {
-                    AnimalDirection::Down | AnimalDirection::Up => Vec2::new(BUNNY_WIDTH, BUNNY_WIDTH * BUNNY_FRONTBACK_HEIGHT_RATIO),
-                    AnimalDirection::Left | AnimalDirection::Right => Vec2::new(BUNNY_WIDTH, BUNNY_WIDTH * BUNNY_SIDE_HEIGHT_RATIO),
+                    AnimalDirection::Down | AnimalDirection::Up => Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE),
+                    AnimalDirection::Left | AnimalDirection::Right => Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO),
                 }
             };
 
             let direction_map = animal_atlases.get(state).unwrap();
-            println!("{}", *direction == AnimalDirection::Left);
             let target_atlas = direction_map.get(direction).unwrap();
             commands.entity(entity).insert_bundle(SpriteSheetBundle {
                     sprite: TextureAtlasSprite {
@@ -76,7 +75,7 @@ fn spawn_animal_sprites(
                     ..default()
                 })
                 .insert(FrameAnimation {
-                    timer: Timer::from_seconds(0.2, true),
+                    timer: Timer::from_seconds(0.1, true),
                     current_frame: 0,
                 });
         })
