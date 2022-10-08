@@ -2,6 +2,7 @@ mod components;
 mod map;
 mod noise_map_gen;
 mod graphics;
+mod pathfinder;
 
 mod prelude {
     pub use crate::components::*;
@@ -10,6 +11,7 @@ mod prelude {
     pub use bevy::prelude::*;
     pub use rand::{thread_rng, Rng};
     pub use crate::graphics::*;
+    pub use crate::pathfinder::*;
 }
 
 use std::hash::Hash;
@@ -115,14 +117,6 @@ fn spawn_initial_animals(mut commands: Commands) {
         AnimalType::Bunny,
         AnimalState::Moving,
         AnimalDirection::Down,
-    ));
-
-    commands.spawn_bundle((
-        Animal, 
-        Pos(Vec2::new((MAP_WIDTH as f32 / 2.0 + 20.0) * TILE_SIZE as f32, (MAP_HEIGHT as f32 / 2.0) * TILE_SIZE as f32)),
-        AnimalType::Bunny,
-        AnimalState::Moving,
-        AnimalDirection::Left,
     ));
 }
 
