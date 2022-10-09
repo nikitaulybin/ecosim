@@ -29,7 +29,8 @@ impl Plugin for GraphicsPlugin {
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_trees)
             .add_startup_system_to_stage(StartupStage::Startup, spawn_animal_sprites)
             .add_system(Self::frame_animation)
-            .add_system(Self::draw_paths);
+            .add_system(Self::draw_paths)
+            .add_system(Self::update_sprite_positions);
     }
 }
 
@@ -365,6 +366,12 @@ impl GraphicsPlugin {
                     ..default()
                 });
             }
+        }
+    }
+
+    fn update_sprite_positions(mut query: Query<(&Pos, &mut Transform)>) {
+        for (pos, mut transform) in query.iter_mut() {
+            transform.translation = Vec3::new(pos.0.x, pos.0.y, 0.0);
         }
     }
 }

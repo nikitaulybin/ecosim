@@ -1,5 +1,6 @@
 mod components;
 mod graphics;
+mod animal_behavour;
 mod map;
 mod noise_map_gen;
 mod pathfinder;
@@ -7,6 +8,7 @@ mod pathfinder;
 mod prelude {
     pub use crate::components::*;
     pub use crate::graphics::*;
+    pub use crate::animal_behavour::*;
     pub use crate::map::*;
     pub use crate::noise_map_gen::*;
     pub use crate::pathfinder::*;
@@ -43,6 +45,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(GraphicsPlugin)
+        .add_plugin(AnimalBehaviourPlugin)
         .insert_resource(map)
         .insert_resource(pathfinder)
         .insert_resource(WindowDescriptor {
@@ -88,7 +91,9 @@ fn mouse_button_input(
             let (entity, _, pos) = animal_query.get_single().unwrap();
 
             let path = pathfinder.a_star(pos.0, map_pos);
-            ev_drawpath.send(DrawPathEvent(Path(path)));
+            ev_drawpath.send(DrawPathEvent(Path(path.clone())));
+
+            commands.entity(entity).insert(Path(path.clone()));
         }
     }
 }

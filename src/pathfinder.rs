@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::prelude::*;
 
 pub struct Pathfinder {
@@ -23,7 +25,7 @@ impl Pathfinder {
         Pathfinder { map }
     }
 
-    pub fn a_star(&self, start: Vec2, end: Vec2) -> Vec<Vec2> {
+    pub fn a_star(&self, start: Vec2, end: Vec2) -> VecDeque<Vec2> {
         let end_tile = idx_to_vec2(vec2_to_idx(end) as i32);
         let destination_vec = end_tile - start;
         println!("{}, {} / {}, {}", start.x, start.y, end_tile.x, end_tile.y);
@@ -65,6 +67,7 @@ impl Pathfinder {
             if current_node.pos.x == end_tile.x && current_node.pos.y == end_tile.y {
                 // Found exit
                 path = self.retrace_path(current_node);
+                path.reverse();
                 break;
             }
             let mut neighbours =
@@ -90,7 +93,7 @@ impl Pathfinder {
             }
         }
 
-        path
+        VecDeque::from(path)
     }
 
     fn retrace_path(&self, end: Node) -> Vec<Vec2> {

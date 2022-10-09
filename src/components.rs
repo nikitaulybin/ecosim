@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::utils::HashMap;
 
 use crate::prelude::*;
@@ -17,7 +19,7 @@ pub enum AnimalDirection {
     Left,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Pos(pub Vec2);
 #[derive(Component)]
 pub struct Tree;
@@ -31,4 +33,4 @@ pub enum AnimalType {
     Bunny,
 }
 #[derive(Component)]
-pub struct Path(pub Vec<Vec2>);
+pub struct Path(pub VecDeque<Vec2>);
