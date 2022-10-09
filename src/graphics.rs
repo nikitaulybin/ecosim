@@ -1,13 +1,12 @@
 use crate::prelude::*;
-use bevy::utils::HashMap;
 use bevy::sprite::Anchor;
+use bevy::utils::HashMap;
 
 pub struct GraphicsPlugin;
 
-
 const BUNNY_SIZE: f32 = 10.0;
 const BUNNY_SIDE_HEIGHT_RATIO: f32 = 28.0 / 33.0;
-const BUNNY_FRONTBACK_HEIGHT_RATIO: f32  = 19.0 / 29.0;
+const BUNNY_FRONTBACK_HEIGHT_RATIO: f32 = 19.0 / 29.0;
 
 pub struct SpriteSheets {
     pub trees: Handle<TextureAtlas>,
@@ -20,13 +19,17 @@ pub struct FrameAnimation {
     current_frame: usize,
 }
 
+pub struct DrawPathEvent(pub Path);
+
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PreStartup, Self::load_spritesheets)
+        app.add_event::<DrawPathEvent>()
+            .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_spritesheets)
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_map)
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_trees)
             .add_startup_system_to_stage(StartupStage::Startup, spawn_animal_sprites)
-            .add_system(Self::frame_animation);
+            .add_system(Self::frame_animation)
+            .add_system(Self::draw_paths);
     }
 }
 
@@ -53,14 +56,20 @@ fn spawn_animal_sprites(
             };
             let sprite_size = match animal_type {
                 AnimalType::Bunny => match direction {
-                    AnimalDirection::Down | AnimalDirection::Up => Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE),
-                    AnimalDirection::Left | AnimalDirection::Right => Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO),
-                }
+                    AnimalDirection::Down | AnimalDirection::Up => {
+                        Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE)
+                    }
+                    AnimalDirection::Left | AnimalDirection::Right => {
+                        Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO)
+                    }
+                },
             };
 
             let direction_map = animal_atlases.get(state).unwrap();
             let target_atlas = direction_map.get(direction).unwrap();
-            commands.entity(entity).insert_bundle(SpriteSheetBundle {
+            commands
+                .entity(entity)
+                .insert_bundle(SpriteSheetBundle {
                     sprite: TextureAtlasSprite {
                         custom_size: Some(sprite_size),
                         index: 0,
@@ -336,6 +345,25 @@ impl GraphicsPlugin {
                     animation.current_frame = (animation.current_frame + 1) % texture_atlas.len();
                     sprite.index = animation.current_frame;
                 }
+            }
+        }
+    }
+
+    fn draw_paths(mut ev_drawpath: EventReader<DrawPathEvent>, mut commands: Commands) {
+        for ev in ev_drawpath.iter() {
+            for node in ev.0 .0.iter() {
+                commands.spawn_bundle(SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::BLACK,
+                        custom_size: Some(Vec2::new(TILE_SIZE as f32, TILE_SIZE as f32)),
+                        ..default()
+                    },
+                    transform: Transform {
+                        translation: Vec3::new(node.x, node.y, 0.0),
+                        ..default()
+                    },
+                    ..default()
+                });
             }
         }
     }

@@ -1,22 +1,26 @@
 mod components;
+mod graphics;
 mod map;
 mod noise_map_gen;
-mod graphics;
 mod pathfinder;
 
 mod prelude {
     pub use crate::components::*;
+    pub use crate::graphics::*;
     pub use crate::map::*;
     pub use crate::noise_map_gen::*;
+    pub use crate::pathfinder::*;
     pub use bevy::prelude::*;
     pub use rand::{thread_rng, Rng};
-    pub use crate::graphics::*;
-    pub use crate::pathfinder::*;
 }
 
 use std::hash::Hash;
 
-use bevy::{sprite::Anchor, utils::HashMap, window::PresentMode};
+use bevy::{
+    sprite::Anchor,
+    utils::HashMap,
+    window::{self, PresentMode},
+};
 use prelude::*;
 
 const NOISE_MAP_SCALE: f64 = 10.0;
@@ -24,18 +28,23 @@ const NOISE_MAP_OCTAVES: usize = 4;
 const NOISE_MAP_PERSISTENCE: f64 = 0.5;
 const NOISE_MAP_LACUNARITY: f64 = 2.0;
 
-
 fn main() {
+    let test = Vec2::new(10.0, 15.0);
+    let test1 = Vec2::new(10.0, 15.0);
+
+    println!("{}", test == test1);
     let mut map = Map::new();
     for _i in 0..LAKE_COUNT {
         map.generate_lake();
     }
     map.spawn_trees();
+    let pathfinder = Pathfinder::new(map.clone());
 
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(GraphicsPlugin)
         .insert_resource(map)
+        .insert_resource(pathfinder)
         .insert_resource(WindowDescriptor {
             title: "Ecosystem sim".to_string(),
             width: 1280.0,
@@ -51,40 +60,36 @@ fn main() {
         .run();
 }
 
-
 fn mouse_button_input(
     buttons: Res<Input<MouseButton>>,
     mut map: ResMut<Map>,
+    pathfinder: Res<Pathfinder>,
     mut commands: Commands,
-    query: Query<&TextureAtlasSprite>,
-    tree_query: Query<(&Tree, &Pos)>,
+    mut windows: ResMut<Windows>,
+    camera_query: Query<&Camera>,
+    animal_query: Query<(Entity, &Animal, &Pos)>,
+    mut ev_drawpath: EventWriter<DrawPathEvent>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
-        for (idx, tile) in map.tiles.iter().enumerate() {
-            let tile_pos = idx_to_vec2(idx as i32);
-            if tile.tile_type == TileType::WATER {
-                commands.spawn_bundle(SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::BLACK,
-                        custom_size: Some(Vec2::new(TILE_SIZE as f32, TILE_SIZE as f32)),
-                        ..default()
-                    },
-                    transform: Transform {
-                        translation: Vec3::new(tile_pos.x, tile_pos.y, 0.0),
-                        ..default()
-                    },
-                    ..default()
-                });
-            }
-        }
-        println!("Number of sprites: {}", query.iter().len());
-    }
+        let window = windows.get_primary_mut().unwrap();
+        if let Some(mouse_pos) = window.cursor_position() {
+            let camera = camera_query.get_single().unwrap();
 
-    if buttons.just_pressed(MouseButton::Right) {
-        tree_query.iter().for_each(|(_, pos)| {
-            let idx = vec2_to_idx(pos.0);
-            map.tiles[idx].tile_type = TileType::WATER;
-        })
+            let viewport_size = camera.logical_viewport_size().unwrap();
+            let map_offset = (viewport_size / 2.0)
+                - (Vec2::new(
+                    MAP_WIDTH as f32 * (TILE_SIZE as f32 / 2.0),
+                    MAP_HEIGHT as f32 * (TILE_SIZE as f32 / 2.0),
+                ) / Vec2::new(0.5, 0.5));
+            let map_pos = ((mouse_pos - map_offset) * Vec2::new(0.5, 0.5));
+
+            let map_idx = vec2_to_idx(map_pos);
+
+            let (entity, _, pos) = animal_query.get_single().unwrap();
+
+            let path = pathfinder.a_star(pos.0, map_pos);
+            ev_drawpath.send(DrawPathEvent(Path(path)));
+        }
     }
 }
 
@@ -112,8 +117,11 @@ fn spawn_entities(mut commands: Commands, map: Res<Map>) {
 
 fn spawn_initial_animals(mut commands: Commands) {
     commands.spawn_bundle((
-        Animal, 
-        Pos(Vec2::new((MAP_WIDTH as f32 / 2.0) * TILE_SIZE as f32, (MAP_HEIGHT as f32 / 2.0) * TILE_SIZE as f32)),
+        Animal,
+        Pos(Vec2::new(
+            (MAP_WIDTH as f32 / 2.0) * TILE_SIZE as f32,
+            (MAP_HEIGHT as f32 / 2.0) * TILE_SIZE as f32,
+        )),
         AnimalType::Bunny,
         AnimalState::Moving,
         AnimalDirection::Down,

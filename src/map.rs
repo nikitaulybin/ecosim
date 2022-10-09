@@ -29,7 +29,7 @@ pub enum TileType {
     WATER,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Tile {
     pub tile_type: TileType,
     pub tree_noise_value: f64,
@@ -42,7 +42,19 @@ impl Tile {
             TileType::WATER => Color::rgb(0.0, 0.0, 1.0),
         }
     }
+
+    pub fn is_traversable(&self) -> bool {
+        if self.tile_type == TileType::WATER {
+            return false;
+        }
+
+        if self.tree_noise_value < TREE_SPAWN_NOISE_TRESHOLD {
+            return false;
+        }
+        return true;
+    }
 }
+#[derive(Clone)]
 pub struct Map {
     pub tiles: Vec<Tile>,
     pub tree_positions: Vec<Vec2>,
@@ -94,7 +106,6 @@ impl Map {
         for tile_idx in river_tiles {
             self.tiles[tile_idx as usize].tile_type = TileType::WATER;
         }
-
     }
 
     // For debugging - remove later
@@ -108,7 +119,7 @@ impl Map {
         count
     }
 
-    fn in_bounds(&self, point: Vec2) -> bool {
+    pub fn in_bounds(&self, point: Vec2) -> bool {
         point.x < (MAP_WIDTH * TILE_SIZE) as f32
             && point.x >= 0.0
             && point.y < (MAP_HEIGHT * TILE_SIZE) as f32
@@ -143,10 +154,13 @@ impl Map {
         for y in 0..noise_map.len() {
             for x in 0..noise_map[y].len() {
                 let noise_value = noise_map[y][x];
-                let mut tile = self.tiles[vec2_to_idx(Vec2::new((x * TILE_SIZE)as f32, (y * TILE_SIZE )as f32))];
+                let tile_idx =
+                    vec2_to_idx(Vec2::new((x * TILE_SIZE) as f32, (y * TILE_SIZE) as f32));
+                let mut tile = &mut self.tiles[tile_idx];
                 tile.tree_noise_value = noise_value;
 
-                let should_spawn = noise_value < TREE_SPAWN_NOISE_TRESHOLD && tile.tile_type == TileType::LAND;
+                let should_spawn =
+                    noise_value < TREE_SPAWN_NOISE_TRESHOLD && tile.tile_type == TileType::LAND;
                 if should_spawn {
                     let key = format!("{}-{}", x as i32, y as i32);
 

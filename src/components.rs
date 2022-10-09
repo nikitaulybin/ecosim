@@ -30,3 +30,5 @@ pub struct Animal;
 pub enum AnimalType {
     Bunny,
 }
+#[derive(Component)]
+pub struct Path(pub Vec<Vec2>);
