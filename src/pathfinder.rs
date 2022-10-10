@@ -33,7 +33,10 @@ impl Pathfinder {
             return None;
         }
         let destination_vec = end_tile - start_tile;
-        println!("{}, {} / {}, {}", start_tile.x, start_tile.y, end_tile.x, end_tile.y);
+        println!(
+            "{}, {} / {}, {}",
+            start_tile.x, start_tile.y, end_tile.x, end_tile.y
+        );
         let mut path: Vec<Vec2> = Vec::new();
         let mut open_nodes: Vec<Node> = vec![Node {
             g_cost: 0.0,

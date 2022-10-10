@@ -1,6 +1,6 @@
 use bevy::utils::HashMap;
 
-use crate::{components, prelude::*};
+use crate::prelude::*;
 
 // At some point each animal will have its own speed but for now this is good enough
 const BUNNY_SPEED: f32 = 15.0;
@@ -39,11 +39,11 @@ pub struct AnimalDirectionVectorMap(pub HashMap<AnimalDirection, Vec2>);
 
 impl AnimalBehaviourPlugin {
     fn move_along_path(
-        mut query: Query<(Entity, &Animal, &mut Path, &mut Pos)>,
+        mut query: Query<(Entity, &Animal, &mut Path, &Pos)>,
         mut ev_apply_velocity: EventWriter<ApplyVelocityEvent>,
         mut commands: Commands,
     ) {
-        for (entity, _, mut path, mut pos) in query.iter_mut() {
+        for (entity, _, mut path, pos) in query.iter_mut() {
             if path.0.len() == 0 {
                 commands.entity(entity).remove::<Path>();
                 commands.entity(entity).remove::<Velocity>();
@@ -103,7 +103,10 @@ impl AnimalBehaviourPlugin {
         }
     }
 
-    fn evaluate_animal_state(mut moving_animal_query: Query<(&Animal, &mut AnimalState), With<Velocity>>, mut idle_animal_query: Query<(&Animal, &mut AnimalState), Without<Velocity>>) {
+    fn evaluate_animal_state(
+        mut moving_animal_query: Query<(&Animal, &mut AnimalState), With<Velocity>>,
+        mut idle_animal_query: Query<(&Animal, &mut AnimalState), Without<Velocity>>,
+    ) {
         for (_, mut state) in moving_animal_query.iter_mut() {
             if *state == AnimalState::Moving {
                 continue;
@@ -119,30 +122,32 @@ impl AnimalBehaviourPlugin {
         }
     }
 
-    fn evaluate_animal_direction(mut query: Query<(&Animal, &Velocity, &mut AnimalDirection)>, animal_direction_map: Res<AnimalDirectionVectorMap>) {
+    fn evaluate_animal_direction(
+        mut query: Query<(&Animal, &Velocity, &mut AnimalDirection)>,
+        animal_direction_map: Res<AnimalDirectionVectorMap>,
+    ) {
         for (_, velocity, mut direction) in query.iter_mut() {
             let mut target_direction = direction.clone();
-            let biggest_dot = velocity.0.dot(*animal_direction_map.0.get(&target_direction).unwrap());
+            let biggest_dot = velocity
+                .0
+                .dot(*animal_direction_map.0.get(&target_direction).unwrap());
             for dir in AnimalDirection::iter() {
                 if dir == target_direction {
                     continue;
                 }
                 let current_dot = velocity.0.dot(*animal_direction_map.0.get(&dir).unwrap());
                 if current_dot > biggest_dot {
-                    target_direction = dir;                    
+                    target_direction = dir;
                 }
             }
 
-            if target_direction != *direction{
+            if target_direction != *direction {
                 *direction = target_direction;
             }
         }
     }
 
-    fn move_animals(
-        mut query: Query<(&Animal, &Velocity, &mut Pos)>,
-        time: Res<Time>,
-    ) {
+    fn move_animals(mut query: Query<(&Animal, &Velocity, &mut Pos)>, time: Res<Time>) {
         for (_, velocity, mut pos) in query.iter_mut() {
             println!("Velocity: {} {}", velocity.0.x, velocity.0.y);
             pos.0 += velocity.0 * BUNNY_SPEED * time.delta_seconds();

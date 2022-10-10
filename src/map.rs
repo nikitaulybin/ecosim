@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use bevy::{
     prelude::{Color, Vec2},
     sprite::Rect,
@@ -15,10 +13,9 @@ pub const LAKE_COUNT: usize = 5;
 pub const TILE_SIZE: usize = 4;
 
 // Trees generation
-const TREE_NOISE_MAP_SCALE: f64 = 10.0;
 const TREE_SPAWN_NOISE_TRESHOLD: f64 = 0.30;
 
-const MAP_CHUNK_SIZE: f32 = 20.0;
+const _MAP_CHUNK_SIZE: f32 = 20.0;
 use crate::{
     prelude::*, NOISE_MAP_LACUNARITY, NOISE_MAP_OCTAVES, NOISE_MAP_PERSISTENCE, NOISE_MAP_SCALE,
 };
@@ -74,10 +71,6 @@ impl Map {
         }
     }
 
-    pub fn fill(&mut self, tile_type: TileType) {
-        self.tiles.iter_mut().for_each(|t| t.tile_type = tile_type);
-    }
-
     fn size(&self) -> usize {
         MAP_WIDTH * MAP_HEIGHT
     }
@@ -108,8 +101,7 @@ impl Map {
         }
     }
 
-    // For debugging - remove later
-    fn tile_count_by_type(&self, tile_type: TileType) -> i32 {
+    fn _tile_count_by_type(&self, tile_type: TileType) -> i32 {
         let mut count = 0;
         for tile in self.tiles.iter() {
             if tile.tile_type == tile_type {
@@ -135,20 +127,6 @@ impl Map {
             NOISE_MAP_PERSISTENCE,
             NOISE_MAP_LACUNARITY,
         );
-        let chunks = self.get_chunks();
-
-        // for c in chunks.iter() {
-        //     let mut average_noise_value = 0.0;
-        //     for y in c.min.y as usize..c.max.y as usize {
-        //         for x in c.min.x as usize..c.max.x as usize {
-        //             average_noise_value += noise_map[y][x];
-        //         }
-        //     }
-        //     average_noise_value /= (c.max.x as f64 - c.min.x as f64) * (c.max.y as f64 - c.min.y as f64);
-        //
-        //     println!("{}", average_noise_value);
-        // }
-
         let mut tile_tree_map: HashMap<String, bool> = HashMap::new();
 
         for y in 0..noise_map.len() {
@@ -191,19 +169,15 @@ impl Map {
     //
     // Update: found a different solution, will keep it for now in case I change my mind
 
-    fn get_chunks(&self) -> Vec<Rect> {
+    fn _get_chunks(&self) -> Vec<Rect> {
         let mut current_chunk_origin = Vec2::new(0.0, 0.0);
         let mut chunks = vec![];
 
         loop {
             let chunk_dimensions = Vec2::new(
-                f32::min(MAP_WIDTH as f32 - current_chunk_origin.x, MAP_CHUNK_SIZE),
-                f32::min(MAP_HEIGHT as f32 - current_chunk_origin.y, MAP_CHUNK_SIZE),
+                f32::min(MAP_WIDTH as f32 - current_chunk_origin.x, _MAP_CHUNK_SIZE),
+                f32::min(MAP_HEIGHT as f32 - current_chunk_origin.y, _MAP_CHUNK_SIZE),
             );
-            let chunk = Rect {
-                min: current_chunk_origin,
-                max: current_chunk_origin + chunk_dimensions,
-            };
             let chunk = Rect {
                 min: current_chunk_origin,
                 max: current_chunk_origin + chunk_dimensions,

@@ -86,23 +86,30 @@ fn spawn_animal_sprites(
         })
 }
 impl GraphicsPlugin {
-    fn adjust_sprite_sizes(mut query: Query<(&Animal, &AnimalType, &AnimalDirection, &mut TextureAtlasSprite)>) {
+    fn adjust_sprite_sizes(
+        mut query: Query<(
+            &Animal,
+            &AnimalType,
+            &AnimalDirection,
+            &mut TextureAtlasSprite,
+        )>,
+    ) {
         for (_, animal_type, direction, mut sprite) in query.iter_mut() {
             sprite.custom_size = Some(Self::get_sprite_size(direction, animal_type));
         }
     }
 
-    pub fn get_sprite_size(direction: &AnimalDirection, animal_type: &AnimalType) -> Vec2 { 
-            match animal_type {
-                AnimalType::Bunny => match direction {
-                    AnimalDirection::Down | AnimalDirection::Up => {
-                        Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE)
-                    }
-                    AnimalDirection::Left | AnimalDirection::Right => {
-                        Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO)
-                    }
-                },
-            }
+    pub fn get_sprite_size(direction: &AnimalDirection, animal_type: &AnimalType) -> Vec2 {
+        match animal_type {
+            AnimalType::Bunny => match direction {
+                AnimalDirection::Down | AnimalDirection::Up => {
+                    Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE)
+                }
+                AnimalDirection::Left | AnimalDirection::Right => {
+                    Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO)
+                }
+            },
+        }
     }
 
     fn load_spritesheets(
@@ -364,7 +371,7 @@ impl GraphicsPlugin {
         }
     }
 
-    fn draw_paths(mut ev_drawpath: EventReader<DrawPathEvent>, mut commands: Commands) {
+    fn _draw_paths(mut ev_drawpath: EventReader<DrawPathEvent>, mut commands: Commands) {
         for ev in ev_drawpath.iter() {
             for node in ev.0 .0.iter() {
                 commands.spawn_bundle(SpriteBundle {

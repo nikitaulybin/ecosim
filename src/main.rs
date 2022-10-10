@@ -1,30 +1,25 @@
+mod animal_behavour;
 mod components;
 mod graphics;
-mod animal_behavour;
 mod map;
 mod noise_map_gen;
 mod pathfinder;
 
 mod prelude {
+    pub use crate::animal_behavour::*;
     pub use crate::components::*;
     pub use crate::graphics::*;
-    pub use crate::animal_behavour::*;
     pub use crate::map::*;
     pub use crate::noise_map_gen::*;
     pub use crate::pathfinder::*;
     pub use bevy::prelude::*;
+    pub use bevy::window::PresentMode;
     pub use rand::{thread_rng, Rng};
+    pub use std::collections::VecDeque;
     pub use strum::IntoEnumIterator;
     pub use strum_macros::EnumIter;
 }
 
-use std::hash::Hash;
-
-use bevy::{
-    sprite::Anchor,
-    utils::HashMap,
-    window::{self, PresentMode},
-};
 use prelude::*;
 
 const NOISE_MAP_SCALE: f64 = 10.0;
@@ -67,7 +62,6 @@ fn main() {
 
 fn mouse_button_input(
     buttons: Res<Input<MouseButton>>,
-    mut map: ResMut<Map>,
     pathfinder: Res<Pathfinder>,
     mut commands: Commands,
     mut windows: ResMut<Windows>,
@@ -86,9 +80,7 @@ fn mouse_button_input(
                     MAP_WIDTH as f32 * (TILE_SIZE as f32 / 2.0),
                     MAP_HEIGHT as f32 * (TILE_SIZE as f32 / 2.0),
                 ) / Vec2::new(0.5, 0.5));
-            let map_pos = ((mouse_pos - map_offset) * Vec2::new(0.5, 0.5));
-
-            let map_idx = vec2_to_idx(map_pos);
+            let map_pos = (mouse_pos - map_offset) * Vec2::new(0.5, 0.5);
 
             let (entity, _, pos) = animal_query.get_single().unwrap();
 
@@ -136,7 +128,7 @@ fn spawn_initial_animals(mut commands: Commands) {
     ));
 }
 
-fn render_noise_map(mut commands: Commands) {
+fn _render_noise_map(mut commands: Commands) {
     let noise_map = generate_noise_map(
         MAP_WIDTH,
         MAP_HEIGHT,

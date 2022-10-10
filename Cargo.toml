@@ -15,3 +15,6 @@ strum_macros = "0.24"
 # Enable max optimizations for dependencies, but not for our code:
 [profile.dev.package."*"]
 opt-level = 3
+
+[profile.release]
+lto = "thin"

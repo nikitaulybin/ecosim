@@ -52,6 +52,6 @@ pub fn generate_noise_map(
     noise_map
 }
 
-fn inv_lerp(a: f64, b: f64, v: f64) -> f64{
+fn inv_lerp(a: f64, b: f64, v: f64) -> f64 {
     (v - a) / (b - a)
 }
