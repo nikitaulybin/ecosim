@@ -1,8 +1,8 @@
-use crate::prelude::*;
+use crate::{prelude::*, components};
 
 // At some point each animal will have its own speed but for now this is good enough
-const BUNNY_SPEED: f32 = 5.0;
-const VELOCITY_REAPPLY_TILE_PROXIMITY: f32 = 2.0;
+const BUNNY_SPEED: f32 = 15.0;
+const VELOCITY_REAPPLY_TILE_PROXIMITY: f32 = 6.0;
 pub struct AnimalBehaviourPlugin;
 
 impl Plugin for AnimalBehaviourPlugin {
@@ -28,8 +28,15 @@ impl AnimalBehaviourPlugin {
     pub fn move_along_path(
         mut query: Query<(Entity, &Animal, &mut Path, &mut Pos)>,
         mut ev_apply_velocity: EventWriter<ApplyVelocityEvent>,
+        mut commands: Commands,
     ) {
         for (entity, _, mut path, mut pos) in query.iter_mut() {
+            if path.0.len() == 0 {
+                commands.entity(entity).remove::<Path>();
+                commands.entity(entity).remove::<Velocity>();
+                continue;
+            }
+
             let next_step_in_path = path.0[0];
             let distance_to_next = (pos.0 - next_step_in_path).length();
             let velocity_reapply_range_min = Vec2::new(
@@ -47,7 +54,7 @@ impl AnimalBehaviourPlugin {
                 && pos.0.y <= velocity_reapply_range_max.y
             {
                 println!("Reapplying velocity");
-                pos.0 = path.0.pop_front().unwrap(); 
+                // pos.0 = path.0.pop_front().unwrap(); 
                 ev_apply_velocity.send(ApplyVelocityEvent {
                     entity,
                     pos: pos.0,

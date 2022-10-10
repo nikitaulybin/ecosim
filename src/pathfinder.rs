@@ -27,14 +27,15 @@ impl Pathfinder {
 
     pub fn a_star(&self, start: Vec2, end: Vec2) -> VecDeque<Vec2> {
         let end_tile = idx_to_vec2(vec2_to_idx(end) as i32);
-        let destination_vec = end_tile - start;
-        println!("{}, {} / {}, {}", start.x, start.y, end_tile.x, end_tile.y);
+        let start_tile = idx_to_vec2(vec2_to_idx(start) as i32);
+        let destination_vec = end_tile - start_tile;
+        println!("{}, {} / {}, {}", start_tile.x, start_tile.y, end_tile.x, end_tile.y);
         let mut path: Vec<Vec2> = Vec::new();
         let mut open_nodes: Vec<Node> = vec![Node {
             g_cost: 0.0,
             h_cost: destination_vec.length().ceil(),
             parent_node: None,
-            pos: start,
+            pos: start_tile,
         }];
         let mut closed_nodes: Vec<Node> = vec![];
 
@@ -71,7 +72,7 @@ impl Pathfinder {
                 break;
             }
             let mut neighbours =
-                self.evaluate_traversable_node_neighbours(&current_node, start, end_tile);
+                self.evaluate_traversable_node_neighbours(&current_node, start_tile, end_tile);
             for n in neighbours.iter_mut() {
                 if vec_contains_node(&closed_nodes, n) {
                     continue;
@@ -120,13 +121,13 @@ impl Pathfinder {
         let mut neigbours: Vec<Node> = Vec::new();
         let diff_vectors = vec![
             Vec2::new(1.0, 0.0),
-            // Vec2::new(1.0, 1.0),
+            Vec2::new(1.0, 1.0),
             Vec2::new(0.0, 1.0),
             Vec2::new(-1.0, 0.0),
-            // Vec2::new(-1.0, -1.0),
+            Vec2::new(-1.0, -1.0),
             Vec2::new(0.0, -1.0),
-            // Vec2::new(1.0, -1.0),
-            // Vec2::new(-1.0, 1.0),
+            Vec2::new(1.0, -1.0),
+            Vec2::new(-1.0, 1.0),
         ];
 
         for diff in diff_vectors.iter() {

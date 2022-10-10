@@ -29,7 +29,7 @@ impl Plugin for GraphicsPlugin {
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_trees)
             .add_startup_system_to_stage(StartupStage::Startup, spawn_animal_sprites)
             .add_system(Self::frame_animation)
-            .add_system(Self::draw_paths)
+            // .add_system(Self::draw_paths)
             .add_system(Self::update_sprite_positions);
     }
 }
