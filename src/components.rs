@@ -11,7 +11,7 @@ pub enum AnimalState {
     Eating,
 }
 
-#[derive(Component, Hash, PartialEq, Eq)]
+#[derive(Component, Hash, PartialEq, Eq, EnumIter, Clone)]
 pub enum AnimalDirection {
     Up,
     Down,

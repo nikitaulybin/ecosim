@@ -21,14 +21,18 @@ pub struct FrameAnimation {
 
 pub struct DrawPathEvent(pub Path);
 
+pub struct AdjustSpriteSizeEvent(Entity, AnimalDirection);
+
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<DrawPathEvent>()
+            .add_event::<AdjustSpriteSizeEvent>()
             .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_spritesheets)
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_map)
             .add_startup_system_to_stage(StartupStage::Startup, Self::render_trees)
             .add_startup_system_to_stage(StartupStage::Startup, spawn_animal_sprites)
             .add_system(Self::frame_animation)
+            .add_system(Self::adjust_sprite_sizes)
             // .add_system(Self::draw_paths)
             .add_system(Self::update_sprite_positions);
     }
@@ -51,20 +55,11 @@ fn spawn_animal_sprites(
     // config file yet
     query
         .iter()
-        .for_each(|(entity, animal, pos, state, direction, animal_type)| {
+        .for_each(|(entity, _, pos, state, direction, animal_type)| {
             let animal_atlases = match animal_type {
                 AnimalType::Bunny => &atlases.bunny,
             };
-            let sprite_size = match animal_type {
-                AnimalType::Bunny => match direction {
-                    AnimalDirection::Down | AnimalDirection::Up => {
-                        Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE)
-                    }
-                    AnimalDirection::Left | AnimalDirection::Right => {
-                        Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO)
-                    }
-                },
-            };
+            let sprite_size = GraphicsPlugin::get_sprite_size(direction, animal_type);
 
             let direction_map = animal_atlases.get(state).unwrap();
             let target_atlas = direction_map.get(direction).unwrap();
@@ -91,6 +86,25 @@ fn spawn_animal_sprites(
         })
 }
 impl GraphicsPlugin {
+    fn adjust_sprite_sizes(mut query: Query<(&Animal, &AnimalType, &AnimalDirection, &mut TextureAtlasSprite)>) {
+        for (_, animal_type, direction, mut sprite) in query.iter_mut() {
+            sprite.custom_size = Some(Self::get_sprite_size(direction, animal_type));
+        }
+    }
+
+    pub fn get_sprite_size(direction: &AnimalDirection, animal_type: &AnimalType) -> Vec2 { 
+            match animal_type {
+                AnimalType::Bunny => match direction {
+                    AnimalDirection::Down | AnimalDirection::Up => {
+                        Vec2::new(BUNNY_SIZE * BUNNY_FRONTBACK_HEIGHT_RATIO, BUNNY_SIZE)
+                    }
+                    AnimalDirection::Left | AnimalDirection::Right => {
+                        Vec2::new(BUNNY_SIZE, BUNNY_SIZE * BUNNY_SIDE_HEIGHT_RATIO)
+                    }
+                },
+            }
+    }
+
     fn load_spritesheets(
         mut commands: Commands,
         asset_server: Res<AssetServer>,

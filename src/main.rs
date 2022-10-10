@@ -14,6 +14,8 @@ mod prelude {
     pub use crate::pathfinder::*;
     pub use bevy::prelude::*;
     pub use rand::{thread_rng, Rng};
+    pub use strum::IntoEnumIterator;
+    pub use strum_macros::EnumIter;
 }
 
 use std::hash::Hash;
