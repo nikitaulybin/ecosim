@@ -25,9 +25,13 @@ impl Pathfinder {
         Pathfinder { map }
     }
 
-    pub fn a_star(&self, start: Vec2, end: Vec2) -> VecDeque<Vec2> {
+    pub fn a_star(&self, start: Vec2, end: Vec2) -> Option<VecDeque<Vec2>> {
         let end_tile = idx_to_vec2(vec2_to_idx(end) as i32);
         let start_tile = idx_to_vec2(vec2_to_idx(start) as i32);
+
+        if !self.map.tiles[vec2_to_idx(end_tile)].is_traversable() {
+            return None;
+        }
         let destination_vec = end_tile - start_tile;
         println!("{}, {} / {}, {}", start_tile.x, start_tile.y, end_tile.x, end_tile.y);
         let mut path: Vec<Vec2> = Vec::new();
@@ -94,7 +98,7 @@ impl Pathfinder {
             }
         }
 
-        VecDeque::from(path)
+        Some(VecDeque::from(path))
     }
 
     fn retrace_path(&self, end: Node) -> Vec<Vec2> {

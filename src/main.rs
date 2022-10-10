@@ -92,10 +92,11 @@ fn mouse_button_input(
 
             let (entity, _, pos) = animal_query.get_single().unwrap();
 
-            let path = pathfinder.a_star(pos.0, map_pos);
-            ev_drawpath.send(DrawPathEvent(Path(path.clone())));
+            if let Some(path) = pathfinder.a_star(pos.0, map_pos) {
+                ev_drawpath.send(DrawPathEvent(Path(path.clone())));
 
-            commands.entity(entity).insert(Path(path.clone()));
+                commands.entity(entity).insert(Path(path.clone()));
+            }
         }
     }
 }
