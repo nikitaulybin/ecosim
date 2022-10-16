@@ -10,6 +10,7 @@ const BUNNY_FRONTBACK_HEIGHT_RATIO: f32 = 19.0 / 29.0;
 
 pub struct SpriteSheets {
     pub trees: Handle<TextureAtlas>,
+    pub plants: Handle<TextureAtlas>,
     pub bunny: HashMap<AnimalState, HashMap<AnimalDirection, Handle<TextureAtlas>>>, // bunny[state][direction]
 }
 
@@ -119,10 +120,15 @@ impl GraphicsPlugin {
     ) {
         let tree_sprite_sheet_handle: Handle<Image> = asset_server.load("tree_sprites.png");
         let bunny_sprite_sheet_handle: Handle<Image> = asset_server.load("bunnysheet.png");
+        let plants_sprite_sheet_handle: Handle<Image> = asset_server.load("plants.png");
 
         let tree_texture_atlas =
             TextureAtlas::from_grid(tree_sprite_sheet_handle, Vec2::new(30.0, 53.0), 5, 1);
         let tree_texture_atlas_handle = texture_atlases.add(tree_texture_atlas);
+
+        let plants_texture_atlas =
+            TextureAtlas::from_grid(plants_sprite_sheet_handle, Vec2::new(90.0, 100.0), 8, 1);
+        let plants_texture_atlas_handle = texture_atlases.add(plants_texture_atlas);
 
         let bunny_down_texture_atlas = TextureAtlas::from_grid_with_padding(
             bunny_sprite_sheet_handle.clone(),
@@ -273,6 +279,7 @@ impl GraphicsPlugin {
 
         commands.insert_resource(SpriteSheets {
             trees: tree_texture_atlas_handle,
+            plants: plants_texture_atlas_handle,
             bunny: bunny_atlas_map,
         });
         println!("Spritesheets are loaded!");
@@ -318,7 +325,7 @@ impl GraphicsPlugin {
                     translation: Vec3::new(
                         pos.0.x * TILE_SIZE as f32,
                         pos.0.y * TILE_SIZE as f32,
-                        0.0,
+                        1.0,
                     ),
                     ..default()
                 },
