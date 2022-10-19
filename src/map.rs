@@ -71,7 +71,7 @@ impl Map {
         }
     }
 
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         MAP_WIDTH * MAP_HEIGHT
     }
 

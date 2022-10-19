@@ -4,6 +4,7 @@ mod graphics;
 mod map;
 mod noise_map_gen;
 mod pathfinder;
+mod vegetation;
 
 mod prelude {
     pub use crate::animal_behavour::*;
@@ -12,6 +13,7 @@ mod prelude {
     pub use crate::map::*;
     pub use crate::noise_map_gen::*;
     pub use crate::pathfinder::*;
+    pub use crate::vegetation::*;
     pub use bevy::prelude::*;
     pub use bevy::window::PresentMode;
     pub use rand::{thread_rng, Rng};
@@ -42,6 +44,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(GraphicsPlugin)
+        .add_plugin(VegetationPlugin)
         .add_plugin(AnimalBehaviourPlugin)
         .insert_resource(map)
         .insert_resource(pathfinder)
